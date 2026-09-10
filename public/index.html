@@ -454,6 +454,8 @@ function showLogin() {
 
     document.getElementById("registerCard").style.display = "none";
 
+    document.getElementById("dashboard").style.display = "none";
+
 }
 
 
@@ -466,6 +468,8 @@ function showRegister() {
     document.getElementById("loginCard").style.display = "none";
 
     document.getElementById("registerCard").style.display = "block";
+
+    document.getElementById("dashboard").style.display = "none";
 
 }
 
@@ -651,9 +655,7 @@ document
     });
 
 
-/* =========================================
-   GET USERS
-========================================= */
+
 
 /* =========================================
    GET USERS
@@ -1162,25 +1164,22 @@ async function logout() {
 
 window.addEventListener("load", function() {
 
-    const token =
-        localStorage.getItem("token");
-
+    const token = localStorage.getItem("token");
 
     if (token) {
 
-        document
-            .getElementById("loginCard")
-            .style.display = "none";
-
-
-        document
-            .getElementById("dashboard")
-            .style.display = "block";
+        document.getElementById("loginCard").style.display = "none";
+        document.getElementById("registerCard").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
 
         loadCurrentUser();
         getUsers();
-}
-    
+
+    } else {
+
+        showLogin();
+
+    }
 
 });
 
