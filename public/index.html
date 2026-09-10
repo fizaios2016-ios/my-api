@@ -1122,39 +1122,29 @@ function handleAuthError(response) {
    LOGOUT
 ========================================= */
 
-async function logout() {
-    const refreshToken = localStorage.getItem("refreshToken");
-
-    try {
-        if (refreshToken) {
-            await fetch("/api/auth/logout", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    refreshToken: refreshToken
-                })
-            });
-        }
-    } catch (error) {
-        console.error("Logout request failed:", error);
-    }
-
-    // Clear tokens from browser
+function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
 
-    // Clear dashboard
-    const userList = document.getElementById("userList");
-    if (userList) {
-        userList.innerHTML = "";
+    // Clear login form
+    document.getElementById("loginEmail").value = "";
+    document.getElementById("loginPassword").value = "";
+
+    // Clear login message
+    const loginMessage = document.getElementById("loginMessage");
+    if (loginMessage) {
+        loginMessage.textContent = "";
+        loginMessage.style.display = "none";
     }
 
-    // Return to login
-    showLogin();
+    // Clear register form if needed
+    const registerMessage = document.getElementById("registerMessage");
+    if (registerMessage) {
+        registerMessage.textContent = "";
+        registerMessage.style.display = "none";
+    }
 
-    console.log("User logged out");
+    showLogin();
 }
 
 
