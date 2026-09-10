@@ -1,22 +1,44 @@
 \# My API – Node.js REST API
 
-
-
 A production-ready REST API built with Node.js, Express, MongoDB Atlas, and JWT authentication.
+## 🚀 API Demo
 
+This REST API has been tested successfully using Postman.
 
+### Authentication
+- User Registration
+- User Login
+- JWT Access Token
+- Refresh Token
+- Secure Logout
+- Current User Profile
+
+### User Management
+- Create User
+- Get All Users
+- Get User by ID
+- Update User
+- Delete User
+
+### Security
+- JWT-based authentication
+- Protected API routes
+- User-specific data access
+- Password hashing with bcrypt
+- Refresh token validation
+- Unauthorized request protection
+
+### Deployment
+- Backend: Node.js + Express
+- Database: MongoDB Atlas
+- Hosting: Render
+- API Testing: Postman
 
 \## 🚀 Live API
 
-
-
 https://my-api-v7q6.onrender.com
 
-
-
 \## 🛠️ Technologies
-
-
 
 \- Node.js
 
@@ -36,19 +58,11 @@ https://my-api-v7q6.onrender.com
 
 \- GitHub
 
-
-
 \## 🔐 Authentication
-
-
 
 The API uses JWT access tokens to protect private endpoints.
 
-
-
 Authentication endpoints:
-
-
 
 | Method | Endpoint | Description |
 
@@ -64,15 +78,9 @@ Authentication endpoints:
 
 | GET | `/api/auth/me` | Get current user |
 
-
-
 \## 👤 User Management
 
-
-
 All user-management endpoints require authentication.
-
-
 
 | Method | Endpoint | Description |
 
@@ -88,15 +96,9 @@ All user-management endpoints require authentication.
 
 | DELETE | `/api/users/:id` | Delete user |
 
-
-
 **## 📝 Register**
 
-
-
 \### Request
-
-
 
 ```json
 
@@ -113,14 +115,10 @@ All user-management endpoints require authentication.
 Response
 
 {
-
 &#x20; "message": "User registered successfully"
 
 }
-
 **>>>Login**
-
-
 
 Request
 
