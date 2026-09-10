@@ -655,19 +655,18 @@ document
    GET USERS
 ========================================= */
 
+/* =========================================
+   GET USERS
+========================================= */
+
 async function getUsers() {
 
-    const token =
-        localStorage.getItem("token");
-
+    const token = localStorage.getItem("token");
 
     if (!token) {
-
         alert("Please login first.");
-
         return;
     }
-
 
     try {
 
@@ -675,64 +674,27 @@ async function getUsers() {
             "/api/users",
             {
                 headers: {
-                    "Authorization":
-                        `Bearer ${token}`
+                    "Authorization": `Bearer ${token}`
                 }
             }
         );
 
-       await function handleAuthError(response) {
-    if (response.status !== 401) {
-        return false;
-    }
-
-    const refreshToken = localStorage.getItem("refreshToken");
-
-    if (!refreshToken) {
-        localStorage.removeItem("token");
-        showLogin();
-        return true;
-    }
-
-    try {
-        const refreshResponse = await fetch("/api/auth/refresh", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                refreshToken: refreshToken
-            })
-        });
-
-        const data = await refreshResponse.json();
-
-        if (refreshResponse.ok) {
-            localStorage.setItem("token", data.token);
-            return false;
+        // Check authentication
+        if (handleAuthError(response)) {
+            return;
         }
 
-    } catch (error) {
-        console.error("Token refresh failed:", error);
-    }
+        const data = await response.json();
 
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-
-    alert("Your session has expired. Please login again.");
-
-    showLogin();
-
-    return true;
-}
-
+        if (!response.ok) {
+            alert(data.message || "Unable to load users.");
+            return;
+        }
 
         const userList =
             document.getElementById("userList");
 
-
         userList.innerHTML = "";
-
 
         if (data.length === 0) {
 
@@ -744,16 +706,13 @@ async function getUsers() {
             return;
         }
 
-
         data.forEach(user => {
 
             const li =
                 document.createElement("li");
 
-
             li.className =
                 "user-item";
-
 
             li.innerHTML = `
 
@@ -785,7 +744,6 @@ async function getUsers() {
 
                 </div>
             `;
-
 
             userList.appendChild(li);
 
