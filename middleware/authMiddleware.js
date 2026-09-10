@@ -10,13 +10,19 @@ const authMiddleware = (req, res, next) => {
             });
         }
 
-        const token = authHeader.split(" ")[1];
+        const parts = authHeader.split(" ");
 
-        if (!token) {
+        if (
+            parts.length !== 2 ||
+            parts[0] !== "Bearer" ||
+            !parts[1]
+        ) {
             return res.status(401).json({
-                message: "Access denied. Invalid token."
+                message: "Access denied. Invalid authorization format."
             });
         }
+
+        const token = parts[1];
 
         const decoded = jwt.verify(
             token,
