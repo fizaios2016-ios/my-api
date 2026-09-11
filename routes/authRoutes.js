@@ -4,57 +4,73 @@ const Auth = require("../models/Auth");
 const jwt = require("jsonwebtoken");
 const authMiddleware = require("../middleware/authMiddleware");
 const RefreshToken = require("../models/RefreshToken");
+const { body, validationResult } = require("express-validator");
 
 const router = express.Router();
 console.log("AUTH ROUTES FILE LOADED");
 
 // REGISTER
-router.post("/register", async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
+router.post(
+    "/register",
+    [
+        body("name")
+            .trim()
+            .notEmpty()
+            .withMessage("Name is required"),
 
-        // Check if all fields are provided
-        if (!name || !email || !password) {
-            return res.status(400).json({
-                message: "Name, email and password are required"
+        body("email")
+            .trim()
+            .isEmail()
+            .withMessage("Please enter a valid email address")
+            .normalizeEmail(),
+
+        body("password")
+            .isLength({ min: 6 })
+            .withMessage("Password must be at least 6 characters long")
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
+
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    message: errors.array()[0].msg
+                });
+            }
+
+            const { name, email, password } = req.body;
+
+            const existingUser = await Auth.findOne({ email });
+
+            if (existingUser) {
+                return res.status(400).json({
+                    message: "Email already registered"
+                });
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const user = new Auth({
+                name,
+                email,
+                password: hashedPassword
+            });
+
+            await user.save();
+
+            res.status(201).json({
+                message: "User registered successfully"
+            });
+
+        } catch (error) {
+            console.error("REGISTER ERROR:", error);
+
+            res.status(500).json({
+                message: "Server error"
             });
         }
-
-        // Check if email already exists
-        const existingUser = await Auth.findOne({ email });
-
-        if (existingUser) {
-            return res.status(400).json({
-                message: "Email already registered"
-            });
-        }
-
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create user
-        const user = new Auth({
-            name,
-            email,
-            password: hashedPassword
-        });
-
-        await user.save();
-
-        res.status(201).json({
-            message: "User registered successfully"
-        });
-
-    } catch (error) {
-    console.error("REGISTER ERROR:", error);
-
-    res.status(500).json({
-        message: "Server error",
-        error: error.message
-    });
-}
-    
-});
+    }
+);
 // LOGIN
 router.post("/login", async (req, res) => {
     try {
