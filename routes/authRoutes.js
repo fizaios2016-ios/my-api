@@ -72,139 +72,92 @@ router.post(
     }
 );
 // LOGIN
-router.post("/login", async (req, res) => {
-    try {
-        const { email, password } = req.body;
+router.post(
+    "/login",
+    [
+        body("email")
+            .trim()
+            .isEmail()
+            .withMessage("Please enter a valid email address")
+            .normalizeEmail(),
 
-        // Check fields
-        if (!email || !password) {
-            return res.status(400).json({
-                message: "Email and password are required"
-            });
-        }
+        body("password")
+            .notEmpty()
+            .withMessage("Password is required")
+    ],
+    async (req, res) => {
+        try {
+            const errors = validationResult(req);
 
-        // Find user
-        const user = await Auth.findOne({ email });
-
-        if (!user) {
-            return res.status(401).json({
-                message: "Invalid email or password"
-            });
-        }
-
-        // Check password
-        const passwordMatch = await bcrypt.compare(
-            password,
-            user.password
-        );
-
-        if (!passwordMatch) {
-            return res.status(401).json({
-                message: "Invalid email or password"
-            });
-        }
-
-        // Create JWT token
-        const token = jwt.sign(
-            {
-                id: user._id,
-                email: user.email
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: "1h"
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    message: errors.array()[0].msg
+                });
             }
-        );
 
-        const refreshToken = jwt.sign(
-    {
-        id: user._id
-    },
-    process.env.JWT_SECRET,
-    {
-        expiresIn: "7d"
+            const { email, password } = req.body;
+
+            const user = await Auth.findOne({ email });
+
+            if (!user) {
+                return res.status(401).json({
+                    message: "Invalid email or password"
+                });
+            }
+
+            const passwordMatch = await bcrypt.compare(
+                password,
+                user.password
+            );
+
+            if (!passwordMatch) {
+                return res.status(401).json({
+                    message: "Invalid email or password"
+                });
+            }
+
+            const token = jwt.sign(
+                {
+                    id: user._id,
+                    email: user.email
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: "1h" }
+            );
+
+            const refreshToken = jwt.sign(
+                { id: user._id },
+                process.env.JWT_SECRET,
+                { expiresIn: "7d" }
+            );
+
+            await RefreshToken.deleteMany({
+                user: user._id
+            });
+
+            await RefreshToken.create({
+                token: refreshToken,
+                user: user._id,
+                expiresAt: new Date(
+                    Date.now() + 7 * 24 * 60 * 60 * 1000
+                )
+            });
+
+            res.json({
+                message: "Login successful",
+                token,
+                refreshToken
+            });
+
+        } catch (error) {
+            console.error("LOGIN ERROR:", error);
+
+            res.status(500).json({
+                message: "Server error"
+            });
+        }
     }
 );
-
-await RefreshToken.deleteMany({
-    user: user._id
-});
-
-await RefreshToken.create({
-    token: refreshToken,
-    user: user._id,
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-});
-
-res.json({
-    message: "Login successful",
-    token,
-    refreshToken
-});
-
-    } catch (error) {
-        res.status(500).json({
-            message: "Server error"
-        });
-    }
-});
-
-// REFRESH ACCESS TOKEN
-router.post("/refresh", async (req, res) => {
-    try {
-        const { refreshToken } = req.body;
-
-        if (!refreshToken) {
-            return res.status(401).json({
-                message: "Refresh token is required"
-            });
-        }
-
-        const storedToken = await RefreshToken.findOne({
-            token: refreshToken
-        });
-
-        if (!storedToken) {
-            return res.status(401).json({
-                message: "Invalid refresh token"
-            });
-        }
-
-        if (storedToken.expiresAt < new Date()) {
-            await RefreshToken.deleteOne({
-                _id: storedToken._id
-            });
-
-            return res.status(401).json({
-                message: "Refresh token expired"
-            });
-        }
-
-        const decoded = jwt.verify(
-            refreshToken,
-            process.env.JWT_SECRET
-        );
-
-        const newAccessToken = jwt.sign(
-            {
-                id: decoded.id
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: "1h"
-            }
-        );
-
-        res.json({
-            token: newAccessToken
-        });
-
-    } catch (error) {
-        return res.status(401).json({
-            message: "Invalid refresh token"
-        });
-    }
-});
 // LOGOUT
 router.post("/logout", async (req, res) => {
     try {
