@@ -5,6 +5,7 @@ require("dotenv").config();
 
 const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 const app = express();
 
 // Middleware
@@ -14,7 +15,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
-
+app.use("/api/contact", contactRoutes);
 // Home route
 app.get("/", (req, res) => {
     res.send("My API is working!");
